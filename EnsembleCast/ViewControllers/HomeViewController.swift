@@ -11,30 +11,28 @@ import Combine
 
 // MARK: - HomeViewController
 class HomeViewController: UIViewController {
-    
-    private let transitionDelegate = SearchTransitionDelegate(isPresenting: true)
-    private let searchButton: UIButton = {
+        
+    private let startHuntingButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Search movies...", for: .normal)
-        button.setTitleColor(.black, for: .normal)
-        button.backgroundColor = UIColor.white.withAlphaComponent(1.0)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
-        button.contentHorizontalAlignment = .center
-        button.layer.cornerRadius = 10
-        button.clipsToBounds = true
-        button.layer.borderWidth = 1.0
-        button.layer.borderColor = UIColor.lightGray.cgColor
+        button.setTitle("START HUNTING", for: .normal)
+        button.setTitleColor(UIColor(red: 0.06, green: 0.09, blue: 0.13, alpha: 1.0), for: .normal)
+        button.backgroundColor = .white
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .medium)
+        button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    private let dimView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Movies\nare worth\nthe hunt."
+        label.numberOfLines = 3
+        label.font = .CDFontSemiBold(size: 64)
+        label.textColor = .white
+        label.textAlignment = .left
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
-    
     
     private let backgroundScrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -42,6 +40,7 @@ class HomeViewController: UIViewController {
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.isPagingEnabled = true
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.alpha = 0.1
         return scrollView
     }()
     
@@ -52,41 +51,93 @@ class HomeViewController: UIViewController {
     }
     
     private func setupUI() {
+        navigationController?.navigationBar.isHidden = true
         view.backgroundColor = .systemBackground
-        // Background scroll view for movie covers
         view.addSubview(backgroundScrollView)
         NSLayoutConstraint.activate([
-            backgroundScrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundScrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
             backgroundScrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             backgroundScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             backgroundScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         addBackgroundImages()
         
-        // Add dim view on top of scroll view
-         view.addSubview(dimView)
-         NSLayoutConstraint.activate([
-             dimView.topAnchor.constraint(equalTo: view.topAnchor),
-             dimView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-             dimView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-             dimView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-         ])
+        // Add Gradient View
+        addGradientLayer()
         
-        // Search TextField
-        view.addSubview(searchButton)
+        // Add "START HUNTING" Button
+        view.addSubview(startHuntingButton)
         NSLayoutConstraint.activate([
-            searchButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            searchButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -100),
-            searchButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
-            searchButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
-            searchButton.heightAnchor.constraint(equalToConstant: 50)
+            startHuntingButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            startHuntingButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -32),
+            startHuntingButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 37),
+            startHuntingButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -37),
+            startHuntingButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
+        startHuntingButton.addTarget(self, action: #selector(startHuntingTapped), for: .touchUpInside)
+        
+        
+        // Add Title
+        view.addSubview(titleLabel)
+        NSLayoutConstraint.activate([
+            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: startHuntingButton.topAnchor, constant: -30),
+            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 37),
+            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
         
-        searchButton.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
+        configureTitleLabel()
+        
     }
     
+    private func configureTitleLabel() {
+        let text = "Movies\nare worth\nthe hunt."
+        let attributedString = NSMutableAttributedString(string: text)
+        
+        let paragraphStyle = NSMutableParagraphStyle()
+        
+        paragraphStyle.lineSpacing = -10
+        paragraphStyle.minimumLineHeight = 74
+        paragraphStyle.maximumLineHeight = 74
+        paragraphStyle.alignment = .left
+
+        // Apply white color for all text.
+        attributedString.addAttribute(.foregroundColor, value: UIColor.white, range: NSRange(location: 0, length: text.count))
+        attributedString.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: text.count))
+
+        // Apply purple color to "the hunt."
+        if let range = text.range(of: "the hunt.") {
+            let nsRange = NSRange(range, in: text)
+            let purpleColor = UIColor(red: 0.74, green: 0.35, blue: 0.89, alpha: 1.0)
+            attributedString.addAttribute(.foregroundColor, value: purpleColor, range: nsRange)
+        }
+        
+        titleLabel.baselineAdjustment = .alignBaselines
+        titleLabel.clipsToBounds = false
+        titleLabel.attributedText = attributedString
+    }
+
+
+
+    
+    private func addGradientLayer() {
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.colors = [
+            UIColor(red: 0.06, green: 0.09, blue: 0.13, alpha: 1.0).cgColor,
+            UIColor(red: 0.14, green: 0.09, blue: 0.16, alpha: 1.0).cgColor
+        ]
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1)
+        gradientLayer.frame = view.bounds
+
+        // Ensure the gradient is below the images but above the background
+        view.layer.insertSublayer(gradientLayer, at: 0)
+    }
+
+
+    
     private func addBackgroundImages() {
-        let movieCovers = ["1", "2", "3", "4","5","6", "7"] // Replace with your image asset names
+        let movieCovers = ["1", "2", "3", "4","5","6", "7"]
         var previousImageView: UIImageView?
         
         for cover in movieCovers {
@@ -120,7 +171,7 @@ class HomeViewController: UIViewController {
     
     private func startBackgroundScrolling() {
         let totalWidth = backgroundScrollView.contentSize.width
-        if totalWidth <= view.frame.width { return }  // Skip if not wide enough to scroll
+        if totalWidth <= view.frame.width { return }
         
         // Set scroll speed (higher = faster)
         let scrollSpeed: CGFloat = 30.0 // Pixels per second
@@ -131,7 +182,7 @@ class HomeViewController: UIViewController {
                 self.backgroundScrollView.contentOffset.x = totalWidth - self.view.frame.width
             }) { _ in
                 self.backgroundScrollView.contentOffset.x = 0
-                animateScroll() // Infinite loop
+                animateScroll()
             }
         }
         
@@ -139,14 +190,18 @@ class HomeViewController: UIViewController {
     }
     
     
-    @objc private func searchTapped() {
+    @objc private func startHuntingTapped() {
         let movieVC = MovieViewController()
-        
         let navController = UINavigationController(rootViewController: movieVC)
         navController.modalPresentationStyle = .fullScreen
         present(navController, animated: true)
     }
     
-    
-    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if let gradientLayer = view.layer.sublayers?.first(where: { $0 is CAGradientLayer }) as? CAGradientLayer {
+            gradientLayer.frame = view.bounds
+        }
+    }
+
 }

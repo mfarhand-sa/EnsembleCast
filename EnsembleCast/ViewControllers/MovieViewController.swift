@@ -70,8 +70,6 @@ class MovieViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        // Activate the search controller and show the keyboard
         if !searchController.isActive {
             searchController.isActive = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -79,7 +77,6 @@ class MovieViewController: UIViewController {
             }
         }
     }
-    
     
     
     private func setupUI() {
@@ -149,7 +146,7 @@ class MovieViewController: UIViewController {
         )
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(320)  // Allow height expansion
+            heightDimension: .estimated(320)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item, item])
         
@@ -186,7 +183,7 @@ class MovieViewController: UIViewController {
     private func setupSearchBinding() {
         searchSubject
             .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main) // Delay to avoid frequent requests
-            .filter { $0.count >= 2 } // Minimum 2 characters
+            .filter { $0.count >= 3 }
             .sink { [weak self] query in
                 guard let self = self else { return }
                 self.hasSearched = true
