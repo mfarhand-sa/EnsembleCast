@@ -12,12 +12,12 @@ import Combine
 // MARK: - HomeViewController
 class HomeViewController: UIViewController {
     
-    private let startHuntingButton: UIButton = {
-        let button = UIButton(type: .system)
+    private let startHuntingButton: HFButton = {
+        let button = HFButton(type: .system)
         button.setTitle("START HUNTING", for: .normal)
         button.setTitleColor(UIColor(red: 0.06, green: 0.09, blue: 0.13, alpha: 1.0), for: .normal)
         button.backgroundColor = .white
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .medium)
+        button.titleLabel?.font = .CDFontMedium(size: 20)
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         return button

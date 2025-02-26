@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 extension UIFont {
     
@@ -90,4 +91,47 @@ extension UIViewController {
 
 enum Section {
     case main
+}
+
+func enableCachePolicy() {
+    let cache = ImageCache.default
+    cache.diskStorage.config.sizeLimit = 100 * 1024 * 1024 // 100 MB
+    cache.memoryStorage.config.totalCostLimit = 50 * 1024 * 1024 // 50 MB
+    cache.diskStorage.config.expiration = .days(7) // Keep images for 7 days
+}
+
+
+import CoreHaptics
+
+class Haptic {
+    
+    // Store haptic capability result once to avoid redundant calls
+    private static let supportsHaptics: Bool = CHHapticEngine.capabilitiesForHardware().supportsHaptics
+
+    // Reuse feedback generators to improve performance
+    private static let notificationGenerator = UINotificationFeedbackGenerator()
+    private static let impactLightGenerator = UIImpactFeedbackGenerator(style: .light)
+    private static let impactHeavyGenerator = UIImpactFeedbackGenerator(style: .heavy)
+    
+    /// Plays a success notification haptic.
+    static func play() {
+        guard supportsHaptics else { return }
+        notificationGenerator.prepare()
+        notificationGenerator.notificationOccurred(.success)
+    }
+    
+    /// Plays a light vibration (general feedback).
+    static func vibrating() {
+        guard supportsHaptics else { return }
+        impactLightGenerator.prepare()
+        impactLightGenerator.impactOccurred(intensity: 1.0)
+    }
+    
+    /// Plays an intense vibration.
+    static func intenseVibrating() {
+        guard supportsHaptics else { return }
+        impactHeavyGenerator.prepare()
+        impactHeavyGenerator.impactOccurred(intensity: 1.0)
+    }
+
 }
