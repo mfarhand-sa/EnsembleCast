@@ -42,13 +42,15 @@ class MovieViewModel: ObservableObject {
 
         movieService.searchMovies(query: query, page: currentPage)
             .sink(receiveCompletion: { [weak self] completion in
-                self?.isLoading = false
+                guard let self = self else { return }
+                self.isLoading = false
                 if case .failure(let error) = completion {
-                    self?.errorMessage = "Failed to load movies: \(error.localizedDescription)"
+                    self.errorMessage = "Failed to load movies: \(error.localizedDescription)"
                 }
             }, receiveValue: { [weak self] movies in
-                self?.movies.append(contentsOf: movies)
-                self?.currentPage += 1
+                guard let self = self else { return }
+                self.movies.append(contentsOf: movies)
+                self.currentPage += 1
             })
             .store(in: &cancellables)
     }

@@ -52,7 +52,7 @@ class MovieViewController: UIViewController {
         label.text = "No results found"
         label.textColor = .darkGray
         label.textAlignment = .center
-        label.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        label.font = .CDFontMedium(size: 18)
         label.isHidden = true
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -70,12 +70,6 @@ class MovieViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        if !searchController.isActive {
-            searchController.isActive = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                self.searchController.searchBar.becomeFirstResponder()
-            }
-        }
     }
     
     
@@ -130,12 +124,12 @@ class MovieViewController: UIViewController {
         
         let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
         let itemWidthFraction: CGFloat = isLandscape ? 0.3 : 0.45  // Smaller width in landscape for more items
-
+        
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(itemWidthFraction),
             heightDimension: .estimated(320)
         )
-
+        
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         item.edgeSpacing = NSCollectionLayoutEdgeSpacing(
@@ -196,7 +190,7 @@ class MovieViewController: UIViewController {
         super.viewWillTransition(to: size, with: coordinator)
         collectionView.collectionViewLayout = createLayout()  // Update layout on orientation change
     }
-
+    
     
 }
 
@@ -267,71 +261,86 @@ extension MovieViewController: UISearchBarDelegate {
 //}
 
 // MARK: - MovieCell
+
+import UIKit
+import Combine
+
 class MovieCell: UICollectionViewCell {
     static let reuseIdentifier = "MovieCell"
+    private var movie: Movie?
+    private var cancellables = Set<AnyCancellable>()
     
-    // Add a container view for the card
+    // Card container view
     private let cardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemBackground
-        view.layer.cornerRadius = 12
-        view.layer.masksToBounds = false
-        view.layer.shadowColor = UIColor.black.withAlphaComponent(0.2).cgColor
-        view.layer.shadowOpacity = 0.3
-        view.layer.shadowOffset = CGSize(width: 0, height: 4)
-        view.layer.shadowRadius = 6
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        view.layer.cornerRadius = 15.64
+        view.layer.borderWidth = 0.47
+        view.layer.borderColor =  UIColor(red: 0.327, green: 0.323, blue: 0.323, alpha: 1).cgColor
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-
     
+    // Image container with rounded corners
     private let imageContainerView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 12
-        view.layer.masksToBounds = true  // Ensure corners are clipped
+        view.layer.cornerRadius = 10.42
+        view.layer.masksToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-
+    
+    // Movie image view
     private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
-
     
+    // Favourite label
+    private let favouriteLabel: UILabel = {
+        let label = UILabel()
+        label.text = "FAVOURITE"
+        label.font = .CDFontSemiBold(size: 12)
+        label.textColor = .white
+        label.textAlignment = .center
+        label.backgroundColor = UIColor(red: 0.93, green: 0, blue: 1, alpha: 1)
+        label.layer.cornerRadius = 8
+        label.layer.masksToBounds = true
+        label.layer.borderWidth = 0.5
+        label.layer.borderColor = UIColor.white.cgColor
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        return label
+    }()
+    
+    
+    // Movie title
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.boldSystemFont(ofSize: 16)
+        label.font = .CDFontSemiBold(size: 16)
         label.numberOfLines = 2
         label.textColor = .label
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
+    // Year label
     private let yearLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = .secondaryLabel
+        label.font = .CDFontSemiBold(size: 16)
+        label.textColor = UIColor.gray
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
+    // Action button
     private let actionButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(named: "like")?.withRenderingMode(.alwaysOriginal), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
-    }()
-    
-    private let actionLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = .systemPink
-        label.isHidden = true
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
     }()
     
     override init(frame: CGRect) {
@@ -343,11 +352,17 @@ class MovieCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Setup UI
     private func setupUI() {
-        actionButton.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
-        
         contentView.addSubview(cardView)
         cardView.addSubview(imageContainerView)
+        imageContainerView.addSubview(imageView)
+        imageContainerView.addSubview(favouriteLabel)
+        cardView.addSubview(titleLabel)
+        cardView.addSubview(yearLabel)
+        cardView.addSubview(actionButton)
+        
+        // Card view constraints
         NSLayoutConstraint.activate([
             cardView.topAnchor.constraint(equalTo: contentView.topAnchor),
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -355,80 +370,98 @@ class MovieCell: UICollectionViewCell {
             cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
         
-        imageContainerView.addSubview(imageView)
-        cardView.addSubview(titleLabel)
-        cardView.addSubview(yearLabel)
-        cardView.addSubview(actionButton)
-        cardView.addSubview(actionLabel)
-        
-        
+        // Image container constraints
         NSLayoutConstraint.activate([
-            imageContainerView.topAnchor.constraint(equalTo: cardView.topAnchor),
-            imageContainerView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
-            imageContainerView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
-            imageContainerView.heightAnchor.constraint(equalToConstant: 200),
-
+            imageContainerView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 8),
+            imageContainerView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 8),
+            imageContainerView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -8),
+        ])
+        
+        let imageHeightConstraint = imageContainerView.heightAnchor.constraint(equalToConstant: 260.0)
+        imageHeightConstraint.priority = .defaultHigh
+        imageHeightConstraint.isActive = true
+        
+        // Image view constraints
+        NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: imageContainerView.topAnchor),
             imageView.leadingAnchor.constraint(equalTo: imageContainerView.leadingAnchor),
             imageView.trailingAnchor.constraint(equalTo: imageContainerView.trailingAnchor),
             imageView.bottomAnchor.constraint(equalTo: imageContainerView.bottomAnchor)
         ])
         
+        // Favourite label constraints
         NSLayoutConstraint.activate([
-  
-            titleLabel.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 8),
+            favouriteLabel.bottomAnchor.constraint(equalTo: imageContainerView.bottomAnchor, constant: -7),
+            favouriteLabel.leadingAnchor.constraint(equalTo: imageContainerView.leadingAnchor, constant: 8),
+            favouriteLabel.heightAnchor.constraint(equalToConstant: 22),
+            favouriteLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 80)
+        ])
+        
+        
+        // Title and Year labels
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: imageContainerView.bottomAnchor, constant: 8),
             titleLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 8),
             titleLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -8),
+            titleLabel.heightAnchor.constraint(equalToConstant: 80),
             
             yearLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
             yearLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 8),
             yearLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -8),
-            
-            actionButton.topAnchor.constraint(equalTo: yearLabel.bottomAnchor, constant: 4),
-            actionButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 8),
-            
-            actionLabel.topAnchor.constraint(equalTo: actionButton.bottomAnchor, constant: 4),
-            actionLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 8),
-            actionLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -8)
+            yearLabel.bottomAnchor.constraint(lessThanOrEqualTo: cardView.bottomAnchor, constant: -8),
         ])
+        
+        
+        // Action button constraints
+        NSLayoutConstraint.activate([
+            actionButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
+            actionButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -8),
+            actionButton.widthAnchor.constraint(equalToConstant: 24),
+            actionButton.heightAnchor.constraint(equalToConstant: 24)
+        ])
+        
+        actionButton.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+        
     }
     
+    // MARK: - Configure Cell
     func configure(with movie: Movie) {
+        self.movie = movie
+
         titleLabel.text = movie.title
-        yearLabel.text = "Year: \(movie.year)"
-        actionLabel.text = "saved"
+        yearLabel.text = movie.year
         loadImage(for: movie.poster)
+
+        // Subscribe to isLiked changes
+        movie.$isLiked
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLiked in
+                guard let self = self else { return }
+                self.updateUI(for: isLiked)
+            }
+            .store(in: &cancellables)
+
+        // Set initial UI state
+        updateUI(for: movie.isLiked)
+    }
+    
+    private func updateUI(for isLiked: Bool) {
+        favouriteLabel.isHidden = !isLiked
+        cardView.layer.borderColor = isLiked
+            ? UIColor(red: 0.93, green: 0, blue: 1, alpha: 1).cgColor
+            : UIColor(red: 0.327, green: 0.323, blue: 0.323, alpha: 1).cgColor
+        let imageName = isLiked ? "liked" : "like"
+        actionButton.setImage(UIImage(named: imageName)?.withRenderingMode(.alwaysOriginal), for: .normal)
     }
     
     private func loadImage(for url: String) {
-        guard let url = URL(string: url) else {
-            return
-        }
-        
-        imageView.kf.setImage(
-            with: url,
-            options: [],
-            completionHandler: { [weak self] result in
-                guard let self = self else { return }
-                
-                switch result {
-                case .success(_): break
-                case .failure(_):
-                    self.imageView.image = UIImage(named: "placeholder")
-                    break
-                }
-            }
-        )
+        guard let url = URL(string: url) else { return }
+        imageView.kf.setImage(with: url, placeholder: UIImage(named: "placeholder"))
     }
     
     @objc private func buttonTapped() {
-        actionLabel.isHidden.toggle()
-        updateCellHeight()
-    }
+         movie?.isLiked.toggle()  // Update state via Combine
+     }
     
-    private func updateCellHeight() {
-        UIView.animate(withDuration: 0.3) {
-            self.superview?.layoutIfNeeded()
-        }
-    }
 }
+

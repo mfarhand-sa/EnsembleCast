@@ -11,7 +11,7 @@ import Combine
 
 // MARK: - HomeViewController
 class HomeViewController: UIViewController {
-        
+    
     private let startHuntingButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("START HUNTING", for: .normal)
@@ -40,6 +40,7 @@ class HomeViewController: UIViewController {
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.isPagingEnabled = true
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.alpha = 0.1
         return scrollView
     }()
@@ -50,9 +51,14 @@ class HomeViewController: UIViewController {
         startBackgroundScrolling()
     }
     
+    
+    
     private func setupUI() {
-        navigationController?.navigationBar.isHidden = true
         view.backgroundColor = .systemBackground
+        edgesForExtendedLayout = .all
+        navigationController?.navigationBar.isTranslucent = true
+        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
+        navigationController?.navigationBar.shadowImage = UIImage()
         view.addSubview(backgroundScrollView)
         NSLayoutConstraint.activate([
             backgroundScrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
@@ -68,7 +74,6 @@ class HomeViewController: UIViewController {
         // Add "START HUNTING" Button
         view.addSubview(startHuntingButton)
         NSLayoutConstraint.activate([
-            startHuntingButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             startHuntingButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -32),
             startHuntingButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 37),
             startHuntingButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -37),
@@ -80,7 +85,6 @@ class HomeViewController: UIViewController {
         // Add Title
         view.addSubview(titleLabel)
         NSLayoutConstraint.activate([
-            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             titleLabel.bottomAnchor.constraint(equalTo: startHuntingButton.topAnchor, constant: -30),
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 37),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
@@ -100,11 +104,11 @@ class HomeViewController: UIViewController {
         paragraphStyle.minimumLineHeight = 74
         paragraphStyle.maximumLineHeight = 74
         paragraphStyle.alignment = .left
-
+        
         // Apply white color for all text.
         attributedString.addAttribute(.foregroundColor, value: UIColor.white, range: NSRange(location: 0, length: text.count))
         attributedString.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: text.count))
-
+        
         // Apply purple color to "the hunt."
         if let range = text.range(of: "the hunt.") {
             let nsRange = NSRange(range, in: text)
@@ -116,9 +120,9 @@ class HomeViewController: UIViewController {
         titleLabel.clipsToBounds = false
         titleLabel.attributedText = attributedString
     }
-
-
-
+    
+    
+    
     
     private func addGradientLayer() {
         let gradientLayer = CAGradientLayer()
@@ -129,12 +133,12 @@ class HomeViewController: UIViewController {
         gradientLayer.startPoint = CGPoint(x: 0.5, y: 0)
         gradientLayer.endPoint = CGPoint(x: 0.5, y: 1)
         gradientLayer.frame = view.bounds
-
+        
         // Ensure the gradient is below the images but above the background
         view.layer.insertSublayer(gradientLayer, at: 0)
     }
-
-
+    
+    
     
     private func addBackgroundImages() {
         let movieCovers = ["1", "2", "3", "4","5","6", "7"]
@@ -191,10 +195,8 @@ class HomeViewController: UIViewController {
     
     
     @objc private func startHuntingTapped() {
-        let movieVC = MovieViewController()
-        let navController = UINavigationController(rootViewController: movieVC)
-        navController.modalPresentationStyle = .fullScreen
-        present(navController, animated: true)
+        let tabbarVC = MainTabBarController()
+        updateRootViewController(to: tabbarVC)
     }
     
     override func viewDidLayoutSubviews() {
@@ -203,5 +205,5 @@ class HomeViewController: UIViewController {
             gradientLayer.frame = view.bounds
         }
     }
-
+    
 }
