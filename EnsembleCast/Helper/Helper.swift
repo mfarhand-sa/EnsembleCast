@@ -53,7 +53,7 @@ extension UIViewController {
             .first,
            let window = windowScene.windows.first {
             
-            guard let currentVC = window.rootViewController else {
+            guard window.rootViewController != nil else {
                 window.rootViewController = nil
                 window.rootViewController = viewController
                 window.makeKeyAndVisible()

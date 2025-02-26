@@ -10,8 +10,13 @@ import Combine
 import Kingfisher
 
 // MARK: - MovieViewController
+enum Section {
+    case main
+}
+
 class MovieViewController: UIViewController {
     
+    private var dataSource: UICollectionViewDiffableDataSource<Section, Movie>!
     private var collectionView: UICollectionView!
     private let viewModel = MovieViewModel()
     private var cancellables = Set<AnyCancellable>()
@@ -64,6 +69,14 @@ class MovieViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        setupDataSource()
+        
+        var initialSnapshot = NSDiffableDataSourceSnapshot<Section, Movie>()
+        initialSnapshot.appendSections([.main])
+        initialSnapshot.appendItems(viewModel.movies, toSection: .main)
+        dataSource.apply(initialSnapshot, animatingDifferences: false)
+
+        
         bindViewModel()
         setupSearchBinding()
     }
@@ -71,6 +84,27 @@ class MovieViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
     }
+    
+    private func setupDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<Section, Movie>(
+            collectionView: collectionView
+        ) { (collectionView, indexPath, movie) -> UICollectionViewCell? in
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: MovieCell.reuseIdentifier,
+                for: indexPath
+            ) as? MovieCell else {
+                return UICollectionViewCell()
+            }
+
+            cell.configure(with: movie)
+            cell.onLikeButtonUpdate  = { [weak self] in
+                guard let self = self else { return }
+                self.reconfigure(movie: movie)
+            }
+            return cell
+        }
+    }
+
     
     
     private func setupUI() {
@@ -83,7 +117,6 @@ class MovieViewController: UIViewController {
         let layout = createLayout()
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.delegate = self
-        collectionView.dataSource = self
         collectionView.register(MovieCell.self, forCellWithReuseIdentifier: MovieCell.reuseIdentifier)
         collectionView.backgroundColor = .systemBackground
         
@@ -145,8 +178,8 @@ class MovieViewController: UIViewController {
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item, item])
         
         let section = NSCollectionLayoutSection(group: group)
-        section.interGroupSpacing = 10
-        section.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+        section.interGroupSpacing = 5
+        section.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
         
         return UICollectionViewCompositionalLayout(section: section)
     }
@@ -168,10 +201,29 @@ class MovieViewController: UIViewController {
                     emptyViewLabel.isHidden = !movies.isEmpty
                 }
                 
-                collectionView.reloadData()
+                viewModel.$movies
+                    .receive(on: DispatchQueue.main)
+                    .sink { [weak self] newMovies in
+                        guard let self = self else { return }
+                        self.applyMoviesSnapshot(movies: newMovies)
+                    }
+                    .store(in: &cancellables)
+
+                
+                
+     
+                
             }
             .store(in: &cancellables)
     }
+    
+    private func applyMoviesSnapshot(movies: [Movie]) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Movie>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(movies, toSection: .main)
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+
     
     
     private func setupSearchBinding() {
@@ -191,25 +243,19 @@ class MovieViewController: UIViewController {
         collectionView.collectionViewLayout = createLayout()  // Update layout on orientation change
     }
     
+    func reconfigure(movie: Movie) {
+        var snapshot = dataSource.snapshot()
+        snapshot.reconfigureItems([movie])  // reconfigure exactly one item
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+    
     
 }
 
 // MARK: - UICollectionViewDelegate, UICollectionViewDataSource
-extension MovieViewController: UICollectionViewDelegate, UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return viewModel.movies.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MovieCell.reuseIdentifier, for: indexPath) as? MovieCell else {
-            return UICollectionViewCell()
-        }
-        let movie = viewModel.movies[indexPath.item]
-        cell.configure(with: movie)
-        return cell
-    }
-    
+extension MovieViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard indexPath.item < viewModel.movies.count else { return }
         let movie = viewModel.movies[indexPath.item]
         viewModel.loadMoreIfNeeded(currentItem: movie)
     }
@@ -269,13 +315,14 @@ class MovieCell: UICollectionViewCell {
     static let reuseIdentifier = "MovieCell"
     private var movie: Movie?
     private var cancellables = Set<AnyCancellable>()
+    var onLikeButtonUpdate: (() -> Void)?
     
     // Card container view
     private let cardView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
-        view.layer.cornerRadius = 15.64
-        view.layer.borderWidth = 0.47
+        view.backgroundColor = .systemBackground
+        view.layer.cornerRadius = 16
+        view.layer.borderWidth = 1
         view.layer.borderColor =  UIColor(red: 0.327, green: 0.323, blue: 0.323, alpha: 1).cgColor
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -308,7 +355,7 @@ class MovieCell: UICollectionViewCell {
         label.backgroundColor = UIColor(red: 0.93, green: 0, blue: 1, alpha: 1)
         label.layer.cornerRadius = 8
         label.layer.masksToBounds = true
-        label.layer.borderWidth = 0.5
+        label.layer.borderWidth = 1.0
         label.layer.borderColor = UIColor.white.cgColor
         label.translatesAutoresizingMaskIntoConstraints = false
         label.isHidden = true
@@ -408,7 +455,7 @@ class MovieCell: UICollectionViewCell {
             yearLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
             yearLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 8),
             yearLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -8),
-            yearLabel.bottomAnchor.constraint(lessThanOrEqualTo: cardView.bottomAnchor, constant: -8),
+            yearLabel.bottomAnchor.constraint(lessThanOrEqualTo: cardView.bottomAnchor, constant: -16),
         ])
         
         
@@ -460,8 +507,8 @@ class MovieCell: UICollectionViewCell {
     }
     
     @objc private func buttonTapped() {
-         movie?.isLiked.toggle()  // Update state via Combine
+         movie?.isLiked.toggle()
+         onLikeButtonUpdate?()
      }
-    
 }
 

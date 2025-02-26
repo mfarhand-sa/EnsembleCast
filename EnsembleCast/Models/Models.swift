@@ -9,14 +9,13 @@
 import Foundation
 import Combine
 
-// MARK: - Movie Model
-class Movie: ObservableObject, Identifiable, Codable {
+class Movie: ObservableObject, Identifiable, Codable, Hashable {
     let id: String
     let title: String
     let year: String
     let poster: String
     
-    @Published var isLiked: Bool = false  // Combine-backed property
+    @Published var isLiked: Bool = false
 
     enum CodingKeys: String, CodingKey {
         case id = "imdbID"
@@ -25,6 +24,7 @@ class Movie: ObservableObject, Identifiable, Codable {
         case poster = "Poster"
     }
     
+    // MARK: - Initializers
     init(id: String, title: String, year: String, poster: String, isLiked: Bool = false) {
         self.id = id
         self.title = title
@@ -33,23 +33,33 @@ class Movie: ObservableObject, Identifiable, Codable {
         self.isLiked = isLiked
     }
     
-    // Custom decoding to initialize ObservableObject
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(String.self, forKey: .id)
         title = try container.decode(String.self, forKey: .title)
         year = try container.decode(String.self, forKey: .year)
         poster = try container.decode(String.self, forKey: .poster)
-        isLiked = false  // Default value, not from API
+        // By default, isLiked = false (not from API)
+        isLiked = false
     }
     
-    // Custom encoding to exclude isLiked from API payloads
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(title, forKey: .title)
         try container.encode(year, forKey: .year)
         try container.encode(poster, forKey: .poster)
+    }
+    
+    // MARK: - Hashable
+    static func == (lhs: Movie, rhs: Movie) -> Bool {
+        // Compare only the stable identity property (id)
+        return lhs.id == rhs.id
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        // Hash only the stable identity property
+        hasher.combine(id)
     }
 }
 
@@ -65,3 +75,4 @@ struct MovieResponse: Codable {
         case response = "Response"
     }
 }
+
