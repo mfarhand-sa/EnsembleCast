@@ -18,7 +18,6 @@ class MovieViewModel: ObservableObject {
     private var currentPage = 1
     private var currentQuery = ""
     private var cancellables = Set<AnyCancellable>()
-    private let apiKey = Constants.AppConfig.apiKey
     
     
     init(movieService: MovieService = .shared) {

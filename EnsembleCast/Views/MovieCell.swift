@@ -102,6 +102,11 @@ class MovieCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        cancellables.removeAll()
+    }
+    
     // MARK: - Setup UI
     private func setupUI() {
         contentView.addSubview(cardView)
@@ -176,6 +181,7 @@ class MovieCell: UICollectionViewCell {
     
     // MARK: - Configure Cell
     func configure(with movie: Movie) {
+        cancellables.removeAll()
         self.movie = movie
 
         titleLabel.text = movie.title
