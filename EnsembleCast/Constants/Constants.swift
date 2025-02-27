@@ -40,7 +40,11 @@ struct Constants {
     
     struct CornerRaduce {
         static var cardRaduce: CGFloat {
-            return 40.0
+            return 16.0
+        }
+        
+        static var imageRaduce: CGFloat {
+            return 16.0
         }
         
         static var buttonRaduce: CGFloat {
@@ -49,6 +53,13 @@ struct Constants {
         
         static var generalRaduce: CGFloat {
             return 16.0
+        }
+    }
+    
+    struct Border {
+        
+        static var generalBorderWidth: CGFloat {
+            return 1.0
         }
     }
     

@@ -16,7 +16,7 @@ class Movie: ObservableObject, Identifiable, Codable, Hashable {
     let poster: String
     
     @Published var isLiked: Bool = false
-
+    
     enum CodingKeys: String, CodingKey {
         case id = "imdbID"
         case title = "Title"
@@ -39,7 +39,6 @@ class Movie: ObservableObject, Identifiable, Codable, Hashable {
         title = try container.decode(String.self, forKey: .title)
         year = try container.decode(String.self, forKey: .year)
         poster = try container.decode(String.self, forKey: .poster)
-        // By default, isLiked = false (not from API)
         isLiked = false
     }
     
@@ -53,12 +52,10 @@ class Movie: ObservableObject, Identifiable, Codable, Hashable {
     
     // MARK: - Hashable
     static func == (lhs: Movie, rhs: Movie) -> Bool {
-        // Compare only the stable identity property (id)
         return lhs.id == rhs.id
     }
     
     func hash(into hasher: inout Hasher) {
-        // Hash only the stable identity property
         hasher.combine(id)
     }
 }
@@ -68,7 +65,7 @@ struct MovieResponse: Codable {
     let search: [Movie]?
     let totalResults: String?
     let response: String
-
+    
     enum CodingKeys: String, CodingKey {
         case search = "Search"
         case totalResults

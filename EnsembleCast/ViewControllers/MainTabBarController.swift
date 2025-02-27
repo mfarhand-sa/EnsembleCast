@@ -13,7 +13,7 @@ class MainTabBarController: UITabBarController {
         super.viewDidLoad()
         setupTabBar()
     }
-
+    
     private func setupTabBar() {
         // Movie Tab
         let exploreViewController = ExploreViewController()
@@ -23,8 +23,7 @@ class MainTabBarController: UITabBarController {
             image: UIImage(named: "search-unselected")?.withRenderingMode(.alwaysOriginal),
             selectedImage: UIImage(named: "search-selected")?.withRenderingMode(.alwaysOriginal)
         )
-
-        // Favourites Tab (Placeholder View Controller)
+        
         let favouritesViewController = UIViewController()
         favouritesViewController.view.backgroundColor = .systemBackground
         favouritesViewController.tabBarItem = UITabBarItem(
@@ -32,15 +31,14 @@ class MainTabBarController: UITabBarController {
             image: UIImage(named: "favourite-unselected")?.withRenderingMode(.alwaysOriginal),
             selectedImage: UIImage(named: "favourite-selected")?.withRenderingMode(.alwaysOriginal)
         )
-
-        // Set the ViewControllers
+        
         viewControllers = [movieNavController] // TODO: favouritesViewController
-
+        
         // Tab Bar Appearance
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = UIColor.systemBackground
-
+        
         tabBar.standardAppearance = appearance
         tabBar.scrollEdgeAppearance = appearance
         tabBar.tintColor = .label

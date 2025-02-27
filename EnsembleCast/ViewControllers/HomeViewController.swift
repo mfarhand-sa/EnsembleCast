@@ -14,12 +14,8 @@ class HomeViewController: UIViewController {
     
     private var gradientLayer: CAGradientLayer?
     private let startHuntingButton: HFButton = {
-        let button = HFButton(type: .system)
+        let button = HFButton()
         button.setTitle("START HUNTING", for: .normal)
-        button.setTitleColor(.systemBackground, for: .normal)
-        button.backgroundColor = .label
-        button.titleLabel?.font = .CDFontMedium(size: 20)
-        button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -106,11 +102,9 @@ class HomeViewController: UIViewController {
         paragraphStyle.maximumLineHeight = 74
         paragraphStyle.alignment = .left
         
-        // Apply white color for all text.
         attributedString.addAttribute(.foregroundColor, value: UIColor.label, range: NSRange(location: 0, length: text.count))
         attributedString.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: text.count))
         
-        // Apply purple color to "the hunt."
         if let range = text.range(of: "the hunt.") {
             let nsRange = NSRange(range, in: text)
             let purpleColor = UIColor(red: 0.74, green: 0.35, blue: 0.89, alpha: 1.0)
@@ -179,8 +173,7 @@ class HomeViewController: UIViewController {
         let totalWidth = backgroundScrollView.contentSize.width
         if totalWidth <= view.frame.width { return }
         
-        // Set scroll speed (higher = faster)
-        let scrollSpeed: CGFloat = 30.0 // Pixels per second
+        let scrollSpeed: CGFloat = 30.0
         let duration = Double(totalWidth / scrollSpeed)
         
         func animateScroll() {
@@ -210,7 +203,7 @@ class HomeViewController: UIViewController {
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-
+        
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
             addGradientLayer()
         }

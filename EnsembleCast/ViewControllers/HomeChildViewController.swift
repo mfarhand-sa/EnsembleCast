@@ -52,7 +52,7 @@ class HomeChildViewController: UIViewController {
             backgroundScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         addBackgroundImages()
-
+        
         view.addSubview(titleLabel)
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
@@ -81,7 +81,7 @@ class HomeChildViewController: UIViewController {
         
         let purpleColor = UIColor(red: 0.74, green: 0.35, blue: 0.89, alpha: 1.0)
         attributedString.addAttribute(.foregroundColor, value: purpleColor, range: NSRange(location: 0, length: text.count))
-
+        
         
         titleLabel.baselineAdjustment = .alignBaselines
         titleLabel.clipsToBounds = false
@@ -93,75 +93,63 @@ class HomeChildViewController: UIViewController {
     private func addBackgroundImages() {
         let movieCovers = ["1", "2", "3", "4", "5", "6", "7"]
         
-        // Desired size of each “card”
         let cardWidth: CGFloat = 200
         let cardHeight: CGFloat = 400
         
-        // Padding between cards (horizontal spacing)
         let horizontalSpacing: CGFloat = 16
         
-        // Vertical padding inside the scroll view
         let verticalPadding: CGFloat = 16
         
         var previousImageView: UIImageView?
-
+        
         for cover in movieCovers {
             let imageView = UIImageView(image: UIImage(named: cover))
             imageView.contentMode = .scaleAspectFill
             imageView.clipsToBounds = true
             
             // Corner radius
-            imageView.layer.cornerRadius = 16
+            imageView.layer.cornerRadius = Constants.CornerRaduce.imageRaduce
             imageView.layer.masksToBounds = true
-
+            
             imageView.translatesAutoresizingMaskIntoConstraints = false
             backgroundScrollView.addSubview(imageView)
             
             NSLayoutConstraint.activate([
-                // Vertical padding top & bottom
                 imageView.centerYAnchor.constraint(equalTo: backgroundScrollView.centerYAnchor, constant: 120),
                 
-                // Fixed size (width & height) for each image
                 imageView.widthAnchor.constraint(equalToConstant: cardWidth),
                 imageView.heightAnchor.constraint(equalToConstant: cardHeight)
             ])
             
             if let previous = previousImageView {
-                // Chain to the right of the previous image with some spacing
                 imageView.leadingAnchor.constraint(equalTo: previous.trailingAnchor, constant: horizontalSpacing).isActive = true
             } else {
-                // First image anchors to the scrollView’s leading with padding
                 imageView.leadingAnchor.constraint(equalTo: backgroundScrollView.leadingAnchor, constant: horizontalSpacing).isActive = true
             }
             
             previousImageView = imageView
         }
         
-        // Anchor the last image to the scrollView’s trailing with some spacing
         previousImageView?.trailingAnchor.constraint(
             equalTo: backgroundScrollView.trailingAnchor,
             constant: -horizontalSpacing
         ).isActive = true
         
-        // If you want to ensure the scroll view’s contentSize is correct,
-        // you can calculate it (optional if Auto Layout handles sizing).
-        // For a purely horizontal scroll, an approximate contentSize is:
         let totalWidth = (cardWidth + horizontalSpacing) * CGFloat(movieCovers.count)
-            + horizontalSpacing // for the initial leading offset
+        + horizontalSpacing
         backgroundScrollView.contentSize = CGSize(
             width: totalWidth,
             height: cardHeight + 2 * verticalPadding
         )
     }
-
+    
     
     
     private func startBackgroundScrolling() {
         let totalWidth = backgroundScrollView.contentSize.width
         if totalWidth <= view.frame.width { return }
         
-        // Set scroll speed (higher = faster)
-        let scrollSpeed: CGFloat = 30.0 // Pixels per second
+        let scrollSpeed: CGFloat = 30.0
         let duration = Double(totalWidth / scrollSpeed)
         
         func animateScroll() {
@@ -175,6 +163,6 @@ class HomeChildViewController: UIViewController {
         
         animateScroll()
     }
-
+    
     
 }

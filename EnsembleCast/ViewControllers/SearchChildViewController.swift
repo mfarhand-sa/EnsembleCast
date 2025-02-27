@@ -9,8 +9,11 @@ import UIKit
 import Combine
 import Kingfisher
 
-// MARK: - SearchChildViewController
+protocol SearchChildDelegate: AnyObject {
+    func dismissKeyboard()
+}
 
+// MARK: - SearchChildViewController
 
 class SearchChildViewController: UIViewController {
     
@@ -19,15 +22,16 @@ class SearchChildViewController: UIViewController {
         v.translatesAutoresizingMaskIntoConstraints = false
         return v
     }()
-
+    
     private var dataSource: UICollectionViewDiffableDataSource<Section, Movie>!
     private var collectionView: UICollectionView!
     private let viewModel = MovieViewModel()
     private var cancellables = Set<AnyCancellable>()
     private var hasSearched = false
     private var searchSubject = PassthroughSubject<String, Never>()
-
-
+    weak var delegate: SearchChildDelegate?
+    
+    
     
     private let emptyViewLabel: UILabel = {
         let label = UILabel()
@@ -51,7 +55,7 @@ class SearchChildViewController: UIViewController {
         initialSnapshot.appendSections([.main])
         initialSnapshot.appendItems(viewModel.movies, toSection: .main)
         dataSource.apply(initialSnapshot, animatingDifferences: false)
-
+        
         
         bindViewModel()
         setupSearchBinding()
@@ -71,7 +75,7 @@ class SearchChildViewController: UIViewController {
             ) as? MovieCell else {
                 return UICollectionViewCell()
             }
-
+            
             cell.configure(with: movie)
             cell.onLikeButtonUpdate  = { [weak self] in
                 guard let self = self else { return }
@@ -80,8 +84,6 @@ class SearchChildViewController: UIViewController {
             return cell
         }
     }
-    
-
     
     
     private func setupUI() {
@@ -116,7 +118,7 @@ class SearchChildViewController: UIViewController {
     private func createLayout() -> UICollectionViewCompositionalLayout {
         
         let isLandscape = UIScreen.main.bounds.width > UIScreen.main.bounds.height
-        let itemWidthFraction: CGFloat = isLandscape ? 0.3 : 0.45  // Smaller width in landscape for more items
+        let itemWidthFraction: CGFloat = isLandscape ? 0.3 : 0.45
         
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(itemWidthFraction),
@@ -163,47 +165,42 @@ class SearchChildViewController: UIViewController {
             }
             .store(in: &cancellables)
     }
-
+    
     
     private func applyMoviesSnapshot(movies: [Movie]) {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Movie>()
         snapshot.appendSections([.main])
         snapshot.appendItems(movies, toSection: .main)
-        dataSource.apply(snapshot, animatingDifferences: true)
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
     
     func updateSearchQuery(_ text: String) {
         if text.count < 3 {
             hasSearched = false
-            // Optionally show "Start searching..." right away:
             emptyViewLabel.text = "Start searching for movies"
             emptyViewLabel.isHidden = false
-            
-            // Clear old results so the collection goes empty
             viewModel.clearSearch()
         } else {
             hasSearched = true
-            // Do the actual search
             viewModel.searchMovies(query: text)
         }
     }
-
+    
     func clearSearch() {
         hasSearched = false
-        // Also show the same "Start searching" message if you like:
         emptyViewLabel.text = "Start searching for movies"
         emptyViewLabel.isHidden = false
         
         viewModel.clearSearch()
     }
-
-
-
+    
+    
+    
     
     
     private func setupSearchBinding() {
         searchSubject
-            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main) // Delay to avoid frequent requests
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
             .filter { $0.count >= 3 }
             .sink { [weak self] query in
                 guard let self = self else { return }
@@ -215,12 +212,12 @@ class SearchChildViewController: UIViewController {
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        collectionView.collectionViewLayout = createLayout()  // Update layout on orientation change
+        collectionView.collectionViewLayout = createLayout()
     }
     
     func reconfigure(movie: Movie) {
         var snapshot = dataSource.snapshot()
-        snapshot.reconfigureItems([movie])  // reconfigure exactly one item
+        snapshot.reconfigureItems([movie])
         dataSource.apply(snapshot, animatingDifferences: false)
     }
     
@@ -233,6 +230,13 @@ extension SearchChildViewController: UICollectionViewDelegate {
         guard indexPath.item < viewModel.movies.count else { return }
         let movie = viewModel.movies[indexPath.item]
         viewModel.loadMoreIfNeeded(currentItem: movie)
+    }
+    
+}
+
+extension SearchChildViewController: UIScrollViewDelegate {
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        delegate?.dismissKeyboard()
     }
 }
 

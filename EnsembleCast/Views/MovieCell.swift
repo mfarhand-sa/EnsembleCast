@@ -24,8 +24,8 @@ class MovieCell: UICollectionViewCell {
     private let cardView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(named: "CardBackground") ?? .systemBackground
-        view.layer.cornerRadius = 16
-        view.layer.borderWidth = 1
+        view.layer.cornerRadius = Constants.CornerRaduce.cardRaduce
+        view.layer.borderWidth = Constants.Border.generalBorderWidth
         view.layer.borderColor =  UIColor(red: 0.327, green: 0.323, blue: 0.323, alpha: 1).cgColor
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -34,7 +34,7 @@ class MovieCell: UICollectionViewCell {
     // Image container with rounded corners
     private let imageContainerView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 10.42
+        view.layer.cornerRadius = Constants.CornerRaduce.imageRaduce
         view.layer.masksToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -58,7 +58,7 @@ class MovieCell: UICollectionViewCell {
         label.backgroundColor = UIColor(red: 0.93, green: 0, blue: 1, alpha: 1)
         label.layer.cornerRadius = 8
         label.layer.masksToBounds = true
-        label.layer.borderWidth = 1.0
+        label.layer.borderWidth = Constants.Border.generalBorderWidth
         label.layer.borderColor = UIColor.white.cgColor
         label.translatesAutoresizingMaskIntoConstraints = false
         label.isHidden = true
@@ -183,11 +183,11 @@ class MovieCell: UICollectionViewCell {
     func configure(with movie: Movie) {
         cancellables.removeAll()
         self.movie = movie
-
+        
         titleLabel.text = movie.title
         yearLabel.text = movie.year
         loadImage(for: movie.poster)
-
+        
         // Subscribe to isLiked changes
         movie.$isLiked
             .receive(on: DispatchQueue.main)
@@ -196,7 +196,7 @@ class MovieCell: UICollectionViewCell {
                 self.updateUI(for: isLiked)
             }
             .store(in: &cancellables)
-
+        
         // Set initial UI state
         updateUI(for: movie.isLiked)
     }
@@ -204,8 +204,8 @@ class MovieCell: UICollectionViewCell {
     private func updateUI(for isLiked: Bool) {
         favouriteLabel.isHidden = !isLiked
         cardView.layer.borderColor = isLiked
-            ? UIColor(red: 0.93, green: 0, blue: 1, alpha: 1).cgColor
-            : UIColor(red: 0.327, green: 0.323, blue: 0.323, alpha: 1).cgColor
+        ? UIColor(red: 0.93, green: 0, blue: 1, alpha: 1).cgColor
+        : UIColor(red: 0.327, green: 0.323, blue: 0.323, alpha: 1).cgColor
         let imageName = isLiked ? "liked" : "like"
         actionButton.setImage(UIImage(named: imageName)?.withRenderingMode(.alwaysOriginal), for: .normal)
     }
@@ -216,7 +216,8 @@ class MovieCell: UICollectionViewCell {
     }
     
     @objc private func buttonTapped() {
-         movie?.isLiked.toggle()
-         onLikeButtonUpdate?()
-     }
+        Haptic.play()
+        movie?.isLiked.toggle()
+        onLikeButtonUpdate?()
+    }
 }

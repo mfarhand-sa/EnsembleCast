@@ -49,15 +49,12 @@ class ExploreViewController: UIViewController {
             gradientLayer.frame = view.bounds
         }
     }
-
+    
     private func setupUI() {
         view.backgroundColor = .systemBackground
         setupNavigation()
-        navigationItem.searchController = searchController
-        definesPresentationContext = true
         addGradientLayer()
     }
-    
     
     
     private func addGradientLayer() {
@@ -91,14 +88,22 @@ class ExploreViewController: UIViewController {
         navigationController?.navigationBar.isTranslucent = true
         navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         navigationController?.navigationBar.shadowImage = UIImage()
+        navigationItem.searchController = searchController
+        definesPresentationContext = true
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-
+        
         if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
             addGradientLayer()
         }
+    }
+}
+
+extension ExploreViewController: SearchChildDelegate {
+    func dismissKeyboard() {
+        self.searchController.searchBar.resignFirstResponder()
     }
 }
 
@@ -107,13 +112,12 @@ class ExploreViewController: UIViewController {
 // MARK: - UISearchControllerDelegate
 extension ExploreViewController: UISearchControllerDelegate {
     func willPresentSearchController(_ searchController: UISearchController) {
-        // Switch from Home to Search child
         removeChild(homeVC)
         addChildVC(searchVC)
+        searchVC.delegate = self
     }
-
+    
     func willDismissSearchController(_ searchController: UISearchController) {
-        // Switch back from Search child to Home
         removeChild(searchVC)
         addChildVC(homeVC)
     }
@@ -123,7 +127,7 @@ extension ExploreViewController: UISearchControllerDelegate {
 extension ExploreViewController {
     private func addChildVC(_ child: UIViewController) {
         addChild(child)
-
+        
         child.view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(child.view)
         
@@ -136,8 +140,8 @@ extension ExploreViewController {
         
         child.didMove(toParent: self)
     }
-
-
+    
+    
     private func removeChild(_ child: UIViewController) {
         child.willMove(toParent: nil)
         child.view.removeFromSuperview()
@@ -147,15 +151,14 @@ extension ExploreViewController {
 
 
 extension ExploreViewController: UISearchBarDelegate {
-  
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-          // Forward this to your child
-          searchVC.updateSearchQuery(searchText)
-      }
-      
-      func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-          searchVC.clearSearch()
-      }
+        searchVC.updateSearchQuery(searchText)
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchVC.clearSearch()
+    }
 }
 
 
