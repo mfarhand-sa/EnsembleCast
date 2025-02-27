@@ -13,8 +13,7 @@ import Kingfisher
 
 class ExploreViewController: UIViewController {
     
-
-    // The two children
+    private var gradientLayer: CAGradientLayer?
     private let homeVC = HomeChildViewController()
     private let searchVC = SearchChildViewController()
     private lazy var searchController: UISearchController = {
@@ -43,31 +42,64 @@ class ExploreViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
     }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if let gradientLayer = view.layer.sublayers?.first(where: { $0 is CAGradientLayer }) as? CAGradientLayer {
+            gradientLayer.frame = view.bounds
+        }
+    }
 
     private func setupUI() {
         view.backgroundColor = .systemBackground
         setupNavigation()
-        // Add search controller to the navigation bar
         navigationItem.searchController = searchController
         definesPresentationContext = true
+        addGradientLayer()
+    }
+    
+    
+    
+    private func addGradientLayer() {
+        gradientLayer?.removeFromSuperlayer()
+        
+        let newGradientLayer = CAGradientLayer()
+        newGradientLayer.colors = [
+            UIColor(named: "GradientStart")!.cgColor,
+            UIColor(named: "GradientEnd")!.cgColor
+        ]
+        newGradientLayer.startPoint = CGPoint(x: 0.5, y: 0)
+        newGradientLayer.endPoint = CGPoint(x: 0.5, y: 1)
+        newGradientLayer.frame = view.bounds
+        view.layer.insertSublayer(newGradientLayer, at: 0)
+        gradientLayer = newGradientLayer
     }
     
     private func setupNavigation() {
         
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .systemBackground
+        appearance.backgroundColor = .clear
         appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
+        appearance.shadowColor = .clear
         
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationItem.largeTitleDisplayMode = .always
         navigationController?.navigationBar.prefersLargeTitles = true
         self.title = "Explore"
+        navigationController?.navigationBar.isTranslucent = true
+        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
+        navigationController?.navigationBar.shadowImage = UIImage()
     }
     
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
 
-    
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            addGradientLayer()
+        }
+    }
 }
 
 

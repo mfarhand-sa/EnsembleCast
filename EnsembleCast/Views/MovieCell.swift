@@ -23,7 +23,7 @@ class MovieCell: UICollectionViewCell {
     // Card container view
     private let cardView: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = UIColor(named: "CardBackground") ?? .systemBackground
         view.layer.cornerRadius = 16
         view.layer.borderWidth = 1
         view.layer.borderColor =  UIColor(red: 0.327, green: 0.323, blue: 0.323, alpha: 1).cgColor
@@ -80,7 +80,7 @@ class MovieCell: UICollectionViewCell {
     private let yearLabel: UILabel = {
         let label = UILabel()
         label.font = .CDFontSemiBold(size: 16)
-        label.textColor = UIColor.gray
+        label.textColor = UIColor(named: "HFSecoundaryLabel") ?? .gray
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()

@@ -1,13 +1,5 @@
 //
-//  HomeViewController 2.swift
-//  EnsembleCast
-//
-//  Created by Mohi Farhand on 2025-02-25.
-//
-
-
-//
-//  HomeViewController.swift
+//  HomeChildViewController.swift
 //  EnsembleCast
 //
 //  Created by Mohi Farhand on 2025-02-24.
@@ -19,8 +11,6 @@ import Combine
 
 // MARK: - HomeViewController
 class HomeChildViewController: UIViewController {
-    
-
     
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -51,28 +41,21 @@ class HomeChildViewController: UIViewController {
     }
     
     
-    
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .clear
         edgesForExtendedLayout = .all
-//        navigationController?.navigationBar.isTranslucent = true
-//        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
-//        navigationController?.navigationBar.shadowImage = UIImage()
         view.addSubview(backgroundScrollView)
         NSLayoutConstraint.activate([
             backgroundScrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
-            backgroundScrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            backgroundScrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor,constant: -44),
             backgroundScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             backgroundScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
         addBackgroundImages()
-        
-        // Add Gradient View
-        addGradientLayer()
-        
+
         view.addSubview(titleLabel)
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -23)
         ])
@@ -80,20 +63,6 @@ class HomeChildViewController: UIViewController {
         configureTitleLabel()
     }
     
-    
-    private func addGradientLayer() {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [
-            UIColor(red: 0.06, green: 0.09, blue: 0.13, alpha: 1.0).cgColor,
-            UIColor(red: 0.14, green: 0.09, blue: 0.16, alpha: 1.0).cgColor
-        ]
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1)
-        gradientLayer.frame = view.bounds
-        
-        // Ensure the gradient is below the images but above the background
-        view.layer.insertSublayer(gradientLayer, at: 0)
-    }
     
     private func configureTitleLabel() {
         let text = "Hunt Through\n100K+ Movies."
@@ -207,11 +176,5 @@ class HomeChildViewController: UIViewController {
         animateScroll()
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        if let gradientLayer = view.layer.sublayers?.first(where: { $0 is CAGradientLayer }) as? CAGradientLayer {
-            gradientLayer.frame = view.bounds
-        }
-    }
     
 }

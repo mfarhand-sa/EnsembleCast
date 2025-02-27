@@ -12,11 +12,12 @@ import Combine
 // MARK: - HomeViewController
 class HomeViewController: UIViewController {
     
+    private var gradientLayer: CAGradientLayer?
     private let startHuntingButton: HFButton = {
         let button = HFButton(type: .system)
         button.setTitle("START HUNTING", for: .normal)
-        button.setTitleColor(UIColor(red: 0.06, green: 0.09, blue: 0.13, alpha: 1.0), for: .normal)
-        button.backgroundColor = .white
+        button.setTitleColor(.systemBackground, for: .normal)
+        button.backgroundColor = .label
         button.titleLabel?.font = .CDFontMedium(size: 20)
         button.layer.cornerRadius = 16
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -28,7 +29,7 @@ class HomeViewController: UIViewController {
         label.text = "Movies\nare worth\nthe hunt."
         label.numberOfLines = 3
         label.font = .CDFontSemiBold(size: 64)
-        label.textColor = .white
+        label.textColor = .label
         label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -106,7 +107,7 @@ class HomeViewController: UIViewController {
         paragraphStyle.alignment = .left
         
         // Apply white color for all text.
-        attributedString.addAttribute(.foregroundColor, value: UIColor.white, range: NSRange(location: 0, length: text.count))
+        attributedString.addAttribute(.foregroundColor, value: UIColor.label, range: NSRange(location: 0, length: text.count))
         attributedString.addAttribute(.paragraphStyle, value: paragraphStyle, range: NSRange(location: 0, length: text.count))
         
         // Apply purple color to "the hunt."
@@ -125,17 +126,18 @@ class HomeViewController: UIViewController {
     
     
     private func addGradientLayer() {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = [
-            UIColor(red: 0.06, green: 0.09, blue: 0.13, alpha: 1.0).cgColor,
-            UIColor(red: 0.14, green: 0.09, blue: 0.16, alpha: 1.0).cgColor
-        ]
-        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1)
-        gradientLayer.frame = view.bounds
+        gradientLayer?.removeFromSuperlayer()
         
-        // Ensure the gradient is below the images but above the background
-        view.layer.insertSublayer(gradientLayer, at: 0)
+        let newGradientLayer = CAGradientLayer()
+        newGradientLayer.colors = [
+            UIColor(named: "GradientStart")!.cgColor,
+            UIColor(named: "GradientEnd")!.cgColor
+        ]
+        newGradientLayer.startPoint = CGPoint(x: 0.5, y: 0)
+        newGradientLayer.endPoint = CGPoint(x: 0.5, y: 1)
+        newGradientLayer.frame = view.bounds
+        view.layer.insertSublayer(newGradientLayer, at: 0)
+        gradientLayer = newGradientLayer
     }
     
     
@@ -206,4 +208,11 @@ class HomeViewController: UIViewController {
         }
     }
     
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+            addGradientLayer()
+        }
+    }
 }

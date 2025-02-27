@@ -86,15 +86,12 @@ class SearchChildViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = .systemBackground
-       // setupNavigation()
-        // Add search controller to the navigation bar
-        definesPresentationContext = true
-        
+        definesPresentationContext = true        
         let layout = createLayout()
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.delegate = self
         collectionView.register(MovieCell.self, forCellWithReuseIdentifier: MovieCell.reuseIdentifier)
-        collectionView.backgroundColor = .systemBackground
+        collectionView.backgroundColor = .clear
         
         view.addSubview(collectionView)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -106,6 +103,7 @@ class SearchChildViewController: UIViewController {
             
         ])
         
+        view.backgroundColor = .clear
         view.addSubview(emptyViewLabel)
         NSLayoutConstraint.activate([
             emptyViewLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -113,20 +111,6 @@ class SearchChildViewController: UIViewController {
         ])
         
         
-    }
-    
-    private func setupNavigation() {
-        
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .systemBackground
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
-        
-        navigationController?.navigationBar.standardAppearance = appearance
-        navigationController?.navigationBar.scrollEdgeAppearance = appearance
-        navigationItem.largeTitleDisplayMode = .always
-        navigationController?.navigationBar.prefersLargeTitles = true
-        self.title = "Explore"
     }
     
     private func createLayout() -> UICollectionViewCompositionalLayout {
