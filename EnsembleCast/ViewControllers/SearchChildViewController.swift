@@ -164,6 +164,15 @@ class SearchChildViewController: UIViewController {
                 self.applyMoviesSnapshot(movies: movies)
             }
             .store(in: &cancellables)
+        
+        viewModel.$errorMessage
+                .compactMap { $0 }
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] errorMessage in
+                    guard let self = self else { return }
+                    self.showErrorAlert(message: errorMessage)
+                }
+                .store(in: &cancellables)
     }
     
     
@@ -221,6 +230,11 @@ class SearchChildViewController: UIViewController {
         dataSource.apply(snapshot, animatingDifferences: false)
     }
     
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(title: "Opps", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
     
 }
 

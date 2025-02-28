@@ -20,8 +20,8 @@ class HomeViewController: UIViewController {
         return button
     }()
     
-    private let titleLabel: UILabel = {
-        let label = UILabel()
+    private let titleLabel: HFGradientLabel = {
+        let label = HFGradientLabel()
         label.text = "Movies\nare worth\nthe hunt."
         label.numberOfLines = 3
         label.font = .CDFontSemiBold(size: 64)
@@ -114,6 +114,8 @@ class HomeViewController: UIViewController {
         titleLabel.baselineAdjustment = .alignBaselines
         titleLabel.clipsToBounds = false
         titleLabel.attributedText = attributedString
+        titleLabel.gradientColors = [UIColor(named: "TextGradientStart")!.cgColor, UIColor(named: "TextGradientEnd")!.cgColor]
+        titleLabel.applyGradient(to: "the hunt.")
     }
     
     

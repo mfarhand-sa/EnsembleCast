@@ -12,8 +12,8 @@ import Combine
 // MARK: - HomeViewController
 class HomeChildViewController: UIViewController {
     
-    private let titleLabel: UILabel = {
-        let label = UILabel()
+    private let titleLabel: HFGradientLabel = {
+        let label = HFGradientLabel()
         label.text = "Hunt Through\n100K+ Movies."
         label.numberOfLines = 3
         label.font = .CDFontSemiBold(size: 48)
@@ -86,6 +86,8 @@ class HomeChildViewController: UIViewController {
         titleLabel.baselineAdjustment = .alignBaselines
         titleLabel.clipsToBounds = false
         titleLabel.attributedText = attributedString
+        titleLabel.gradientColors = [UIColor(named: "TextGradientStart")!.cgColor, UIColor(named: "TextGradientEnd")!.cgColor]
+        titleLabel.applyGradientToAllText()
     }
     
     
