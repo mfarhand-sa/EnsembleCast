@@ -10,21 +10,20 @@ import UIKit
 class HFGradientLabel: UILabel {
     var gradientColors: [CGColor] = []
     
-    /// Applies a gradient to the entire text
     func applyGradientToAllText() {
-        guard let text = self.text else { return }
-        
+        guard let text = self.text, let currentAttributedText = self.attributedText else { return }
+        let attributedText = NSMutableAttributedString(attributedString: currentAttributedText)
         let gradientLayer = createGradientLayer()
         gradientLayer.frame = boundingRect(for: text)
-        
         let image = gradientImage(from: gradientLayer)
-        self.textColor = UIColor(patternImage: image)
+        attributedText.addAttribute(.foregroundColor, value: UIColor(patternImage: image), range: NSRange(location: 0, length: text.count))
+        self.attributedText = attributedText
     }
+
     
     func applyGradient(to word: String) {
-        guard let text = self.text, text.contains(word) else { return }
-
-        let attributedText = NSMutableAttributedString(string: text)
+        guard let text = self.text, let currentAttributedText = self.attributedText else { return }
+        let attributedText = NSMutableAttributedString(attributedString: currentAttributedText)
         let range = (text as NSString).range(of: word)
 
         attributedText.addAttribute(.foregroundColor, value: self.textColor ?? .black, range: NSRange(location: 0, length: text.count))
