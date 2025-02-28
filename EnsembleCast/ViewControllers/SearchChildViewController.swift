@@ -184,22 +184,13 @@ class SearchChildViewController: UIViewController {
     }
     
     func updateSearchQuery(_ text: String) {
-        if text.count < 3 {
-            hasSearched = false
-            emptyViewLabel.text = "Start searching for movies"
-            emptyViewLabel.isHidden = false
-            viewModel.clearSearch()
-        } else {
-            hasSearched = true
-            viewModel.searchMovies(query: text)
-        }
+        searchSubject.send(text)
     }
     
     func clearSearch() {
         hasSearched = false
         emptyViewLabel.text = "Start searching for movies"
         emptyViewLabel.isHidden = false
-        
         viewModel.clearSearch()
     }
     
@@ -210,11 +201,17 @@ class SearchChildViewController: UIViewController {
     private func setupSearchBinding() {
         searchSubject
             .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
-            .filter { $0.count >= 3 }
-            .sink { [weak self] query in
+            .sink { [weak self] text in
                 guard let self = self else { return }
-                self.hasSearched = true
-                self.viewModel.searchMovies(query: query)
+                if text.count < 3 {
+                    self.hasSearched = false
+                    self.emptyViewLabel.text = "Start searching for movies"
+                    self.emptyViewLabel.isHidden = false
+                    self.viewModel.clearSearch()
+                } else {
+                    self.hasSearched = true
+                    self.viewModel.searchMovies(query: text)
+                }
             }
             .store(in: &cancellables)
     }
