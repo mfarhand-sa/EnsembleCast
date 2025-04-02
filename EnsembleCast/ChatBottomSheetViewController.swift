@@ -1,6 +1,7 @@
 import UIKit
 import PhotosUI
 import FittedSheets
+import BottomSheet
 
 
 
@@ -22,12 +23,16 @@ class ChatViewController: UIViewController, UITextFieldDelegate,UIScrollViewDele
     private var initialBottomConstant: CGFloat = 0
     private let defaultKeyboardHeight: CGFloat = 300 // Fallback if keyboard height isn't yet known
     
+    private var sheetController : SheetViewController?
+    
     
     private let hyKeyboardListener = HyKeyboardListener()
     
     private var keyboardWindow: UIWindow? {
         return hyKeyboardListener.keyboardWindow
     }
+    
+    private var tileVC = TilePickerViewController()
 
 
     
@@ -294,31 +299,113 @@ class ChatViewController: UIViewController, UITextFieldDelegate,UIScrollViewDele
 //        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 //              self.presentImagePickerSheet()
 //          }
+
+
+        
+        let options = SheetOptions(
+            // The full height of the pull bar. The presented view controller will treat this area as a safearea inset on the top
+            pullBarHeight: 24,
+            
+            // The corner radius of the shrunken presenting view controller
+            presentingViewCornerRadius: 20,
+            
+            // Extends the background behind the pull bar or not
+            shouldExtendBackground: true,
+            
+            // Attempts to use intrinsic heights on navigation controllers. This does not work well in combination with keyboards without your code handling it.
+            setIntrinsicHeightOnNavigationControllers: true,
+            
+            // Pulls the view controller behind the safe area top, especially useful when embedding navigation controllers
+            useFullScreenMode: true,
+            
+            // Shrinks the presenting view controller, similar to the native modal
+            shrinkPresentingViewController: true,
+            
+            // Determines if using inline mode or not
+            useInlineMode: false,
+            
+            // Adds a padding on the left and right of the sheet with this amount. Defaults to zero (no padding)
+            horizontalPadding: 0,
+            
+            // Sets the maximum width allowed for the sheet. This defaults to nil and doesn't limit the width.
+            maxWidth: nil
+        )
+
+        self.sheetController = SheetViewController(
+            controller: tileVC,
+            sizes: [.fixed(200), .percent(0.8)])
+        
+        if let sheetController = self.sheetController {
+            
+
+            
+            // The corner curve of the sheet (iOS 13 or later)
+            sheetController.cornerCurve = .continuous
+            
+            // The corner radius of the sheet
+            sheetController.cornerRadius = 20
+            
+            
+            // Set the pullbar's background explicitly
+            sheetController.pullBarBackgroundColor = UIColor.blue
+            
+            // Determine if the rounding should happen on the pullbar or the presented controller only (should only be true when the pull bar's background color is .clear)
+            sheetController.treatPullBarAsClear = false
+            
+            // Disable the dismiss on background tap functionality
+            sheetController.dismissOnOverlayTap = false
+            
+            // Disable the ability to pull down to dismiss the modal
+            sheetController.dismissOnPull = true
+            
+            /// Allow pulling past the maximum height and bounce back. Defaults to true.
+            sheetController.allowPullingPastMaxHeight = false
+            
+            /// Automatically grow/move the sheet to accomidate the keyboard. Defaults to true.
+            sheetController.autoAdjustToKeyboard = true
+            
+            // Color of the sheet anywhere the child view controller may not show (or is transparent), such as behind the keyboard currently
+            
+            // Change the overlay color
+            
+            sheetController.shouldDismiss = { _ in
+                // This is called just before the sheet is dismissed. Return false to prevent the build in dismiss events
+                return true
+            }
+            sheetController.didDismiss = { _ in
+                // This is called after the sheet is dismissed
+            }
+            
+            present(sheetController, animated: true)
+            
+        }
+
+
         
         
-         textView.inputView = KeyboardContainerViewController().view
-         textView.reloadInputViews()
-         textView.becomeFirstResponder()
+//        textView.inputView = bottomSheetViewController.view
+//         textView.reloadInputViews()
+//         textView.becomeFirstResponder()
                 
     }
     
     private func presentImagePickerSheet() {
-        let pickerSheet = ImagePickerSheetViewController()
-        pickerSheet.modalPresentationStyle = .overFullScreen
-        pickerSheet.modalTransitionStyle = .crossDissolve
+//        let pickerSheet = ImagePickerSheetViewController()
+//        pickerSheet.modalPresentationStyle = .overFullScreen
+//        pickerSheet.modalTransitionStyle = .crossDissolve
 
-        if let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
-            let height: CGFloat = 300
-            pickerSheet.view.frame = CGRect(
-                x: 0,
-                y: window.bounds.height - height,
-                width: window.bounds.width,
-                height: height
-            )
-            window.rootViewController?.addChild(pickerSheet)
-            window.addSubview(pickerSheet.view)
-            pickerSheet.didMove(toParent: window.rootViewController)
-        }
+//        if let window = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
+//            let height: CGFloat = 300
+//            pickerSheet.view.frame = CGRect(
+//                x: 0,
+//                y: window.bounds.height - height,
+//                width: window.bounds.width,
+//                height: height
+//            )
+//            window.rootViewController?.addChild(pickerSheet)
+//            window.addSubview(pickerSheet.view)
+//            pickerSheet.didMove(toParent: window.rootViewController)
+//        }
     }
 
 
@@ -755,83 +842,3 @@ extension ChatViewController: HyKeyboardListenerDelegate {
     }
 }
 
-
-class ImagePickerSheetViewController: UIViewController {
-    private var panGesture: UIPanGestureRecognizer!
-    private var initialFrame: CGRect = .zero
-    private var isExpanded = false
-    private let minHeight: CGFloat = 300
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .systemBackground
-        view.layer.cornerRadius = 20
-        view.clipsToBounds = true
-
-        // Add gesture
-        panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
-        view.addGestureRecognizer(panGesture)
-
-        // Example content (add your image picker UI here)
-        let label = UILabel()
-        label.text = "Image Picker"
-        label.textAlignment = .center
-        view.addSubview(label)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            label.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
-            label.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        ])
-    }
-
-    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
-        guard let sheet = self.view else { return }
-
-        let translation = gesture.translation(in: view)
-        switch gesture.state {
-        case .began:
-            initialFrame = sheet.frame
-        case .changed:
-            var newY = initialFrame.origin.y + translation.y
-            newY = max(UIScreen.main.bounds.height - sheet.frame.height, newY)
-            sheet.frame.origin.y = newY
-        case .ended:
-            let velocity = gesture.velocity(in: view).y
-            if velocity < -500 {
-                expand()
-            } else if velocity > 500 {
-                collapse()
-            } else {
-                if sheet.frame.origin.y < UIScreen.main.bounds.height / 2 {
-                    expand()
-                } else {
-                    collapse()
-                }
-            }
-        default:
-            break
-        }
-    }
-
-    func expand() {
-        guard let window = view.window else { return }
-        UIView.animate(withDuration: 0.3) {
-            self.view.frame = window.bounds
-        }
-        isExpanded = true
-    }
-
-    func collapse() {
-        guard let window = view.window else { return }
-        let height = minHeight
-        UIView.animate(withDuration: 0.3) {
-            self.view.frame = CGRect(
-                x: 0,
-                y: window.bounds.height - height,
-                width: window.bounds.width,
-                height: height
-            )
-        }
-        isExpanded = false
-    }
-}

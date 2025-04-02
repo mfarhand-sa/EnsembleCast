@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		CD6A2CEC2D9B8917009B2F39 /* FittedSheets in Frameworks */ = {isa = PBXBuildFile; productRef = CD6A2CEB2D9B8917009B2F39 /* FittedSheets */; };
+		CD6A2D342D9D40C9009B2F39 /* BottomSheet in Frameworks */ = {isa = PBXBuildFile; productRef = CD6A2D332D9D40C9009B2F39 /* BottomSheet */; };
 		CD9F7F4C2D6DD67D0026F9F3 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = CD9F7F4B2D6DD67D0026F9F3 /* Kingfisher */; };
 /* End PBXBuildFile section */
 
@@ -70,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD6A2D342D9D40C9009B2F39 /* BottomSheet in Frameworks */,
 				CD6A2CEC2D9B8917009B2F39 /* FittedSheets in Frameworks */,
 				CD9F7F4C2D6DD67D0026F9F3 /* Kingfisher in Frameworks */,
 			);
@@ -212,6 +214,7 @@
 			packageReferences = (
 				CD9F7F4A2D6DD67D0026F9F3 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				CD6A2CEA2D9B8917009B2F39 /* XCRemoteSwiftPackageReference "FittedSheets" */,
+				CD6A2D322D9D40C9009B2F39 /* XCRemoteSwiftPackageReference "BottomSheet" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CDDA3F1C2D6D654D00BE9A16 /* Products */;
@@ -586,6 +589,14 @@
 				minimumVersion = 2.7.1;
 			};
 		};
+		CD6A2D322D9D40C9009B2F39 /* XCRemoteSwiftPackageReference "BottomSheet" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/joomcode/BottomSheet";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.5;
+			};
+		};
 		CD9F7F4A2D6DD67D0026F9F3 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher";
@@ -601,6 +612,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = CD6A2CEA2D9B8917009B2F39 /* XCRemoteSwiftPackageReference "FittedSheets" */;
 			productName = FittedSheets;
+		};
+		CD6A2D332D9D40C9009B2F39 /* BottomSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CD6A2D322D9D40C9009B2F39 /* XCRemoteSwiftPackageReference "BottomSheet" */;
+			productName = BottomSheet;
 		};
 		CD9F7F4B2D6DD67D0026F9F3 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

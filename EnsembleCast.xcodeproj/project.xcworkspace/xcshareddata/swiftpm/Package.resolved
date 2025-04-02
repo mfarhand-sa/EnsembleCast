@@ -1,6 +1,15 @@
 {
-  "originHash" : "b61612b519169b751f1618df39e84630b1917471e69295a09fd33c2aee9443e3",
+  "originHash" : "5d4c93a69677ef4543847447fe9539119a9ded50ff9d038e3decf16707776b59",
   "pins" : [
+    {
+      "identity" : "bottomsheet",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/joomcode/BottomSheet",
+      "state" : {
+        "revision" : "15ab2cf96b757b72b09a6515f667685ff55924e1",
+        "version" : "2.0.5"
+      }
+    },
     {
       "identity" : "fittedsheets",
       "kind" : "remoteSourceControl",
